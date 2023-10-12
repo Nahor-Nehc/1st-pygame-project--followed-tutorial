@@ -3,7 +3,7 @@ import socket
 class Network:
   def __init__(self):
     self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    self.server = "10.100.224.96" # local address!!!!!
+    self.server = "10.100.227.43" # local address!!!!!
     self.port = 5555
     self.addr = (self.server, self.port)
     self.init_pos = self.connect()

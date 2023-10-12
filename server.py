@@ -2,10 +2,10 @@ import socket
 from _thread import *
 import sys
 from Components.bullet import Bullet, Bullets
-from Components.format_data import convert
+from Components.format_data import convert_initial_message, build_server_reply, unpack_server_reply, unpack_client_reply, build_client_reply
 from Components.settings import *
 
-server = "10.100.224.96" # local address!!!!!
+server = "10.100.227.43" # local address!!!!!
 port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -18,38 +18,39 @@ except socket.error as e:
 s.listen(2)  # how many things it is going to allow to connect
 print("Server started, waiting for connection")
 
-
-
-spaceship_pos = [(0, 0), (100, 100)]
+spaceship_positions = [(0, 0, SPACESHIP_SIZE[0], SPACESHIP_SIZE[1]), (100, 100, SPACESHIP_SIZE[0], SPACESHIP_SIZE[1])]
 bullets = [Bullets(), Bullets()]
+ammo = [0.0, 0.0]
+sb_charge = [0, 0]
+health = [10, 10]
 
 def threaded_client(conn, current_player):
-  conn.send(str.encode(convert(spaceship_pos[current_player])))
-  reply = ""
+  initial_message = list(spaceship_positions[current_player])
+  initial_message.append(current_player)
+  conn.send(str.encode(convert_initial_message(initial_message)))
+  reply = []
   while True:
     try:
       data = conn.recv(2048) # receives the data
       data = data.decode("utf-8") # decode data, arg is the number of bits to receive
-      data = convert(data) # convert string to tuple of positions
-      #pos[current_player] = data
-
+      # = unpack_client_reply(data)
       
       if not data:
         print("disconnected")
         break
       
       else:
-        if current_player == 1:
-          pass
-          #reply = pos[0]
-        elif current_player == 0:
-          pass
-          #reply = pos[1]
+        pass
+        # if current_player == 1:
+        #   reply = []
+        # elif current_player == 0:
+        #   pass
+        #   #reply = pos[1]
 
         # print("Received:", data)
         # print("sending:", reply)
       
-      conn.sendall(str.encode(convert(reply))) # encodes with utf-8
+      conn.sendall(str.encode(build_server_reply(current_player, spaceship_positions, bullets, ammo, sb_charge))) # encodes with utf-8
     
     except:
       print("error")
