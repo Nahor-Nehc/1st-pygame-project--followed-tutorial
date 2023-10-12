@@ -15,5 +15,9 @@ BULLET_VEL = 7
 MAX_BULLETS = 6
 BULLET_WIDTH, BULLET_HEIGHT = 30, 280
 
-# otehr
+# ammo
+YELLOW_AMMO_BAR = pygame.Rect(10, HEIGHT - BULLET_HEIGHT - 10, BULLET_WIDTH, BULLET_HEIGHT)
+RED_AMMO_BAR = pygame.Rect(WIDTH - BULLET_WIDTH - 10, HEIGHT - BULLET_HEIGHT - 10, BULLET_WIDTH, BULLET_HEIGHT)
+
+# other
 SPACE = pygame.transform.scale(pygame.image.load(os.path.join("Assets", "space.png")), (WIDTH, HEIGHT))

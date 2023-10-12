@@ -48,8 +48,30 @@ def unpack_server_reply(string) -> tuple[tuple, list[tuple[int, ...]], list[tupl
   
   return ship, bullet_enemy, bullet_player, enemy_ammo, enemy_sb_charge
 
-def build_client_reply():
-  pass
-
+def build_client_reply(ship_position, bullets_created):
+  # ship_position = (x, y, width, height)
+  # bullets_created = [(x, y),...]
+  ship_position = iterable_to_csv_string(ship_position)
+  bullets_created = iterable_to_csv_string(bullets_created)
+  reply = "|".join([ship_position, bullets_created])
+  return reply
+  
 def unpack_client_reply(string):
-  pass
+  ship_position, bullet_created = string.split("|")
+  ship_position = ship_position.split(",")
+  bullet_created = bullet_created.split(",")
+  
+  return ship_position, bullet_created
+
+ship_position = (3, 4, 5, 6)
+bullet_created = (1, 2)
+ship_position = iterable_to_csv_string(ship_position)
+bullet_created = iterable_to_csv_string(bullet_created)
+reply = "|".join([ship_position, bullet_created])
+print(reply)
+string = reply
+ship_position, bullet_created = string.split("|")
+ship_position = ship_position.split(",")
+bullet_created = csv_string_to_iterable(bullet_created)
+
+print(ship_position, bullet_created, sep = "\n")
