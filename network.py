@@ -5,9 +5,9 @@ surface_server = "192.168.0.21"
 laptop_server = "192.168.0.79"
 
 class Network:
-  def __init__(self):
+  def __init__(self, server = surface_server):
     self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    self.server = surface_server # local address!!!!!
+    self.server = server # local address!!!!!
     self.port = 5555
     self.addr = (self.server, self.port)
     print(1)

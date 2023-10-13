@@ -39,3 +39,5 @@ class Bullets:
   def move(self):
     for bullet in self.bullets:
       bullet.move()
+      if bullet.x < -50 or bullet.x > WIDTH:
+        self.bullets.remove(bullet)
