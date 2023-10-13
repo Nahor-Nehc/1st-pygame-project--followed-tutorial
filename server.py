@@ -6,7 +6,7 @@ from Components.bullet import Bullet, Bullets
 from Components.format_data import convert_initial_message, build_server_reply, unpack_server_reply, unpack_client_reply, build_client_reply
 from Components.settings import *
 
-server = "10.100.227.43" # local address!!!!!
+server = "10.100.224.182" # local address!!!!!
 port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -36,28 +36,30 @@ class Killer:
 def threaded_client(conn, current_player, killer):
   initial_message = list(spaceship_positions[current_player])
   initial_message.append(current_player)
+  initial_message += list(spaceship_positions[int(not current_player)])
   conn.send(str.encode(convert_initial_message(initial_message)))
   reply = ""
   while True:
     try:
       data = conn.recv(2048) # receives the data
       data = data.decode("utf-8") # decode data, arg is the number of bits to receive
-      # = unpack_client_reply(data)
-      
+      ship_position, bullet_created = unpack_client_reply(data)
+      print(ship_position)
+      spaceship_positions[current_player] = ship_position
       if not data:
         print("disconnected")
         break
       
       else:
         reply = build_server_reply(current_player, spaceship_positions, bullets, ammo, sb_charge)
+        print(5, reply) # bullets is class
 
         print("Received:", data)
         print("sending:", reply)
-      
-      conn.sendall(str.encode(reply)) # encodes with utf-8
-    
+            
+      conn.sendall(str.encode(reply)) # encodes with utf-8    
     except:
-      print("error")
+      pass#print("error")
   
   print("lost connection")
   conn.close()

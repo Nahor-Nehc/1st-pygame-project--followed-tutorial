@@ -37,7 +37,7 @@ WINNER_FONT = pygame.font.SysFont("calibri", 100)
 FPS = 60
 
 class Spaceship:
-  def __init__(self, x, y, width, height, image):
+  def __init__(self, x, y, width, height, image, current_player):
     self.x = x
     self.y = y
     self.width = width
@@ -45,6 +45,7 @@ class Spaceship:
     self.update()
     self.image = image
     self.bullet_to_fire = tuple()
+    self.number = current_player
   
   def move(self, keys_pressed):
     if keys_pressed[pygame.K_a] and self.x - VEL > 0: #left
@@ -65,20 +66,24 @@ class Spaceship:
     self.rect = (self.x, self.y, self.width, self.height)
   
   def shoot(self):
-    bullet_position = tuple()
+    bullet_position = tuple()#
     self.bullet_to_fire = bullet_position
   
   def take_bullet(self):
-    if self.bullet_to_fire == tuple():
-      temp = None
-    else:
-      temp = self.bullet_to_fire
-      self.bullet_to_fire = tuple()
+    temp = self.bullet_to_fire
+    self.bullet_to_fire = tuple()
     return temp
 
-def draw(WIN, player):
+  def set(self, x, y, width, height):
+    self.x = x
+    self.y = y
+    self.width = width
+    self.height = height
+
+def draw(WIN, player, enemy):
   WIN.blit(SPACE, (0, 0))
   player.draw(WIN)
+  enemy.draw(WIN)
 
   pygame.display.update()
 
@@ -90,19 +95,23 @@ def main():
   print(data)
   
   player_number = data[4]
+  enemy_number = int(not player_number)
   if player_number == 0:
     spaceship_image = YELLOW_SPACESHIP
+    enemy_spaceship_image = RED_SPACESHIP
   elif player_number == 1:
     spaceship_image = RED_SPACESHIP
+    enemy_spaceship_image = YELLOW_SPACESHIP
   else:
     raise ValueError("player number not 0 or 1:", player_number)
-  player = Spaceship(data[0], data[1], data[2], data[3], spaceship_image)
+  player = Spaceship(data[0], data[1], data[2], data[3], spaceship_image, player_number)
+  enemy = Spaceship(data[5], data[6], data[7], data[8], enemy_spaceship_image, enemy_number)
 
   clock = pygame.time.Clock()
   run = True
   while run:
     clock.tick(FPS)
-    data = unpack_server_reply(network.send(build_client_reply(player.x, player.y, player.width, player.height)))
+    enemy_ship, bullet_enemy, bullet_player, enemy_ammo, enemy_sb_charge = unpack_server_reply(network.send(build_client_reply(player.rect, player.take_bullet())))
     for event in pygame.event.get():
       mouse = pygame.mouse.get_pos()
       if event.type == pygame.QUIT:#quit event
@@ -117,11 +126,12 @@ def main():
     if state == "game":
       keys_pressed = pygame.key.get_pressed()
       player.move(keys_pressed)
+      print(enemy_ship)
+      enemy.set(*map(int, enemy_ship))
 
-    draw(WIN, player)
+    draw(WIN, player, enemy)
 
   main()
-
 
 if __name__ == "__main__":
   main()

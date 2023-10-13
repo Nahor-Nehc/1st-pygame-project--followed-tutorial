@@ -33,4 +33,6 @@ class Bullets:
   
   def unpack(self):
     return [(bullet.x, bullet.y) for bullet in self.bullets]
-
+  
+  def get_bullets(self):
+    return self.unpack()
