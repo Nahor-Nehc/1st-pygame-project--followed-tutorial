@@ -1,7 +1,7 @@
 import pygame
+from pyautogui import alert
 import os
 import math
-import random
 import socket
 import sys
 from network import Network
@@ -46,16 +46,27 @@ class Spaceship:
     self.image = image
     self.bullet_to_fire = tuple()
     self.number = current_player
+    self.enemy_number = int(not current_player)
   
   def move(self, keys_pressed):
-    if keys_pressed[pygame.K_a] and self.x - VEL > 0: #left
-      self.x -= VEL
-    if keys_pressed[pygame.K_d] and self.x + self.width + VEL < BORDER.x: # right
-      self.x += VEL
-    if keys_pressed[pygame.K_w] and self.y - VEL > 0: # up
-      self.y -= VEL
-    if keys_pressed[pygame.K_s] and self.y + VEL + self.height < HEIGHT - 10: # down
-      self.y += VEL
+    if self.number == 0:
+      if keys_pressed[pygame.K_a] and self.x - VEL > 0: #left
+        self.x -= VEL
+      if keys_pressed[pygame.K_d] and self.x + self.width + VEL < BORDER.x: # right
+        self.x += VEL
+      if keys_pressed[pygame.K_w] and self.y - VEL > 0: # up
+        self.y -= VEL
+      if keys_pressed[pygame.K_s] and self.y + VEL + self.height < HEIGHT - 10: # down
+        self.y += VEL
+    elif self.number == 1:
+      if keys_pressed[pygame.K_a] and self.x - VEL > BORDER.right: #left
+        self.x -= VEL
+      if keys_pressed[pygame.K_d] and self.x + self.width + VEL < WIDTH: # right
+        self.x += VEL
+      if keys_pressed[pygame.K_w] and self.y - VEL > 0: # up
+        self.y -= VEL
+      if keys_pressed[pygame.K_s] and self.y + VEL + self.height < HEIGHT - 10: # down
+        self.y += VEL
     
     self.update()
   
@@ -66,8 +77,13 @@ class Spaceship:
     self.rect = (self.x, self.y, self.width, self.height)
   
   def shoot(self):
-    bullet_position = tuple()#
-    self.bullet_to_fire = bullet_position
+    bullet_y = self.y + self.height//2 - BULLET_HEIGHT//2
+    if self.number == 0:
+      bullet_x = self.x + self.width
+    else:
+      bullet_x = self.x - BULLET_WIDTH
+      
+    self.bullet_to_fire = (bullet_x, bullet_y)
   
   def take_bullet(self):
     temp = self.bullet_to_fire
@@ -80,10 +96,16 @@ class Spaceship:
     self.width = width
     self.height = height
 
-def draw(WIN, player, enemy):
+def draw(WIN, player, enemy, bullet_player, bullet_enemy):
   WIN.blit(SPACE, (0, 0))
   player.draw(WIN)
   enemy.draw(WIN)
+  
+  for bullet in bullet_enemy:
+    pygame.draw.rect(WIN, BULLET_COLOUR[player.enemy_number], (bullet[0], bullet[1], BULLET_WIDTH, BULLET_HEIGHT))
+  
+  for bullet in bullet_player:
+    pygame.draw.rect(WIN, BULLET_COLOUR[player.number], (bullet[0], bullet[1], BULLET_WIDTH, BULLET_HEIGHT))
 
   pygame.display.update()
 
@@ -111,11 +133,17 @@ def main():
   run = True
   while run:
     clock.tick(FPS)
-    enemy_ship, bullet_enemy, bullet_player, enemy_ammo, enemy_sb_charge = unpack_server_reply(network.send(build_client_reply(player.rect, player.take_bullet())))
+    raw_data = network.send(build_client_reply(player.rect, player.take_bullet()))
+    if raw_data == None:
+      alert(text = "Other player has disconnected", title = "Client diconnected", button = "Ok")
+      pygame.event.post(pygame.event.Event(pygame.QUIT))
+    enemy_ship, bullet_enemy, bullet_player, enemy_ammo, enemy_sb_charge = unpack_server_reply(raw_data)
+      
     for event in pygame.event.get():
       mouse = pygame.mouse.get_pos()
       if event.type == pygame.QUIT:#quit event
         run = False
+        _ = network.send("Kill")
         pygame.quit()
         sys.exit()
       if state == "game":
@@ -126,10 +154,9 @@ def main():
     if state == "game":
       keys_pressed = pygame.key.get_pressed()
       player.move(keys_pressed)
-      print(enemy_ship)
       enemy.set(*map(int, enemy_ship))
 
-    draw(WIN, player, enemy)
+    draw(WIN, player, enemy, bullet_player, bullet_enemy)
 
   main()
 

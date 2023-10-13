@@ -6,7 +6,9 @@ from Components.bullet import Bullet, Bullets
 from Components.format_data import convert_initial_message, build_server_reply, unpack_server_reply, unpack_client_reply, build_client_reply
 from Components.settings import *
 
-server = "10.100.224.182" # local address!!!!!
+school_server = "10.100.224.182"
+surface_server = "192.168.0.21"
+server = surface_server # local address!!!!!
 port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -20,7 +22,7 @@ s.listen(2)  # how many things it is going to allow to connect
 print("Server started, waiting for connection")
 
 spaceship_positions = [(0, HEIGHT//2, SPACESHIP_SIZE[0], SPACESHIP_SIZE[1]), (WIDTH - SPACESHIP_SIZE[0], HEIGHT//2, SPACESHIP_SIZE[0], SPACESHIP_SIZE[1])]
-bullets = [Bullets(), Bullets()]
+bullets = [Bullets(1), Bullets(-1)]
 ammo = [0.0, 0.0]
 sb_charge = [0, 0]
 health = [10, 10]
@@ -29,6 +31,7 @@ class Killer:
   def __init__(self):
     self.do_kill = False
   def kill(self):
+    print("killing")
     self.do_kill = True
     # connect to the socket then close it
     _ = Network()
@@ -43,20 +46,29 @@ def threaded_client(conn, current_player, killer):
     try:
       data = conn.recv(2048) # receives the data
       data = data.decode("utf-8") # decode data, arg is the number of bits to receive
+      if data == "Kill":
+        conn.sendall(str.encode(""))
+        break
+      
       ship_position, bullet_created = unpack_client_reply(data)
-      print(ship_position)
       spaceship_positions[current_player] = ship_position
-      if not data:
+      
+      if bullet_created != ():
+        bullets[current_player].add_bullet(bullet_created)
+      
+      bullets[current_player].move()
+      
+      if not ship_position:
         print("disconnected")
         break
       
       else:
         reply = build_server_reply(current_player, spaceship_positions, bullets, ammo, sb_charge)
-        print(5, reply) # bullets is class
+        #print(5, reply) # bullets is class
 
         print("Received:", data)
         print("sending:", reply)
-            
+        
       conn.sendall(str.encode(reply)) # encodes with utf-8    
     except:
       pass#print("error")

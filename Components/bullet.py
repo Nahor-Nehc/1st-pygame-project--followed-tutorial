@@ -6,7 +6,7 @@ class Bullet:
     """direction is 1 or -1 (1 is to the right and -1 is to the left)"""
     self.x = x
     self.y = y
-    self.width = BULLET_WIDTH
+    self.width = AMMO_BAR_WIDTH
     self.height = BULLET_HEIGHT
     self.speed = BULLET_VEL * direction
     self.update()
@@ -19,20 +19,23 @@ class Bullet:
     self.rect = (self.x, self.y, self.width, self.height)
   
 class Bullets:
-  def __init__(self):
+  def __init__(self, direction):
     self.bullets = []
+    self.direction = direction
 
   def __call__(self):
     return self.bullets
   
-  def add_bullet(self, bullet):
-    if type(bullet) == Bullet:
-      self.bullets.append(bullet)
-    else:
-      raise ValueError("bullet should be type bullet")
+  def add_bullet(self, bullet_position):
+    new_bullet = Bullet(bullet_position[0], bullet_position[1], self.direction)
+    self.bullets.append(new_bullet)
   
   def unpack(self):
     return [(bullet.x, bullet.y) for bullet in self.bullets]
   
   def get_bullets(self):
     return self.unpack()
+
+  def move(self):
+    for bullet in self.bullets:
+      bullet.move()
