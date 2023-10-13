@@ -9,7 +9,7 @@ from Components.settings import *
 school_server = "10.100.224.182"
 surface_server = "192.168.0.21"
 laptop_server = "192.168.0.79"
-server = laptop_server # local address!!!!!
+server = surface_server # local address!!!!!
 port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
