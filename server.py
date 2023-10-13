@@ -6,10 +6,7 @@ from Components.bullet import Bullet, Bullets
 from Components.format_data import convert_initial_message, build_server_reply, unpack_server_reply, unpack_client_reply, build_client_reply
 from Components.settings import *
 
-school_server = "10.100.224.182"
-surface_server = "192.168.0.21"
-laptop_server = "192.168.0.79"
-server = surface_server # local address!!!!!
+server = "0.0.0.0" # listens to everything
 port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
